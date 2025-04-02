@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -126,17 +125,17 @@
 
 /* Question index styles */
 .question-index {
-  @apply inline-flex items-center justify-center w-6 h-6 rounded-full border border-jalan-secondary/30 text-jalan-secondary text-xs;
+  @apply flex items-center justify-center w-7 h-7 rounded-full bg-black/20 text-sm font-medium mr-2;
 }
 
 /* Form control styles for Typeform look */
 .form-control-typeform {
-  @apply border-b border-jalan-secondary/30 focus-within:border-jalan-accent transition-all duration-200;
+  @apply border-b-2 border-jalan-accent/30 pb-2 focus-within:border-jalan-accent transition-colors;
 }
 
 /* Option button Typeform style */
 .option-button-typeform {
-  @apply flex items-center px-4 py-3 rounded-md border border-jalan-secondary/30 w-full text-left mb-2 hover:border-jalan-accent hover:bg-jalan-accent/5 transition-all duration-200;
+  @apply flex items-center w-full px-4 py-3 border border-jalan-secondary/30 rounded-md text-jalan-text transition-all hover:bg-jalan-accent/10 cursor-pointer;
 }
 
 /* Animation for text appearance */
@@ -152,7 +151,7 @@
 }
 
 .animate-text-appear {
-  animation: text-appear 0.5s ease-out forwards;
+  animation: text-appear 0.5s ease forwards;
 }
 
 /* Subtle pulse animation */
@@ -196,4 +195,35 @@
 /* Floating button */
 .floating-button {
   @apply fixed bottom-20 right-6 bg-jalan-accent text-black font-bold px-4 py-2 rounded-full shadow-lg hover:brightness-110 transition-all;
+}
+
+/* Additional animations for the slide transitions */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.slide-in-right {
+  animation: slide-in-right 0.5s ease forwards;
+}
+
+.slide-out-left {
+  animation: slide-out-left 0.5s ease forwards;
 }
