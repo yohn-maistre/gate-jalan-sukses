@@ -5,6 +5,7 @@ import TypedText from "@/components/TypedText";
 import NavigationBar from "@/components/NavigationBar";
 import { useRoadmap } from "@/contexts/RoadmapContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 
 const getMotivationalMessage = () => {
   const messages = [
@@ -66,13 +67,16 @@ const Roadmap = () => {
   return (
     <div className="min-h-screen bg-jalan-background pb-20">
       <div className="p-6 pt-10">
-        <h1 className="text-3xl font-bold text-jalan-text mb-6">Peta Jalanmu</h1>
+        <div className="flex flex-col mb-6">
+          <h1 className="text-3xl font-bold text-jalan-text mb-2">Peta Jalanmu</h1>
+          <p className="text-jalan-secondary opacity-80">Untuk mencapai: {roadmap.goal}</p>
+        </div>
         
         {/* Progress bar */}
         <div className="mb-6">
-          <div className="h-1 w-full bg-jalan-secondary/30 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-jalan-secondary/10 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-jalan-accent rounded-full"
+              className="h-full bg-jalan-accent rounded-full transition-all duration-1000"
               style={{ width: `${progressPercentage}%` }}
             ></div>
           </div>
@@ -83,7 +87,7 @@ const Roadmap = () => {
         
         {/* Motivational message */}
         {showMotivation && (
-          <div className="mb-8 p-4 border border-jalan-accent/20 rounded animate-text-appear opacity-0">
+          <div className="mb-8 p-4 bg-jalan-accent/5 border border-jalan-accent/20 rounded-lg animate-fade-in opacity-0">
             <TypedText
               text={motivationalMessage}
               className="text-jalan-text"
@@ -92,79 +96,87 @@ const Roadmap = () => {
           </div>
         )}
         
-        {/* Current goal */}
-        <div className="mb-8">
-          <h2 className="text-lg text-jalan-secondary">Tujuan:</h2>
-          <p className="text-jalan-text text-xl">{roadmap.goal}</p>
-        </div>
-        
         {/* Milestones */}
-        <div className="space-y-8">
-          {roadmap.milestones.map((milestone, index) => (
-            <div 
-              key={milestone.id} 
-              className={`border-l-2 ${
-                milestone.status === "completed" 
-                  ? "border-jalan-accent" 
-                  : milestone.status === "in-progress" 
-                    ? "border-jalan-accent/70" 
-                    : "border-jalan-secondary/50"
-              } pl-4 py-2`}
-            >
-              <div className="flex items-start justify-between">
-                <h3 className="text-jalan-text font-medium text-lg">
-                  {milestone.title} 
-                  <span className="text-jalan-secondary text-sm ml-2">
-                    [{
-                      milestone.status === "completed" 
-                        ? "Selesai"
-                        : milestone.status === "in-progress" 
-                          ? "Sedang Berlangsung" 
-                          : "Akan Datang"
-                    }]
-                  </span>
-                </h3>
+        <div className="space-y-6 mt-10">
+          {roadmap.milestones.map((milestone, index) => {
+            const isCompleted = milestone.status === "completed";
+            const isInProgress = milestone.status === "in-progress";
+            
+            return (
+              <div 
+                key={milestone.id} 
+                className={cn(
+                  "relative pl-6 py-4 transition-all",
+                  isCompleted ? "opacity-70" : "opacity-100"
+                )}
+              >
+                {/* Timeline connector */}
+                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-jalan-secondary/20"></div>
                 
-                {milestone.status !== "completed" && (
-                  <button 
-                    onClick={() => handleCompleteMilestone(milestone.id)}
-                    className="text-jalan-accent text-sm hover:brightness-110"
-                  >
-                    &gt; Selesai
-                  </button>
+                {/* Timeline dot */}
+                <div className={cn(
+                  "absolute left-[-4px] top-6 w-[10px] h-[10px] rounded-full",
+                  isCompleted 
+                    ? "bg-jalan-accent" 
+                    : isInProgress
+                      ? "bg-jalan-accent/70" 
+                      : "bg-jalan-secondary/50"
+                )}></div>
+                
+                <div className="flex items-start justify-between">
+                  <h3 className={cn(
+                    "text-lg font-medium transition-all",
+                    isCompleted 
+                      ? "text-jalan-secondary line-through" 
+                      : "text-jalan-text"
+                  )}>
+                    {milestone.title} 
+                  </h3>
+                  
+                  {milestone.status !== "completed" && (
+                    <button 
+                      onClick={() => handleCompleteMilestone(milestone.id)}
+                      className="text-jalan-accent text-sm hover:brightness-110 ml-4"
+                    >
+                      {isInProgress ? "Selesaikan" : "Mulai"}
+                    </button>
+                  )}
+                </div>
+                
+                <p className={cn(
+                  "mt-1 text-sm",
+                  isCompleted ? "text-jalan-secondary/60" : "text-jalan-secondary"
+                )}>
+                  {milestone.description}
+                </p>
+                
+                {milestone.resources.length > 0 && (
+                  <div className="mt-3 space-y-1">
+                    {milestone.resources.map((resource) => (
+                      <a 
+                        key={resource.title}
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-jalan-accent text-sm hover:brightness-110 transition-all"
+                      >
+                        &gt; {resource.title}
+                      </a>
+                    ))}
+                  </div>
                 )}
               </div>
-              
-              <p className="text-jalan-secondary mt-1 text-sm">
-                {milestone.description}
-              </p>
-              
-              {milestone.resources.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {milestone.resources.map((resource) => (
-                    <a 
-                      key={resource.title}
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-jalan-accent text-sm hover:brightness-110"
-                    >
-                      &gt; {resource.title}
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       
       {/* Chat mentor button */}
       <Link
         to="/chat"
-        className="fixed bottom-20 right-6 bg-jalan-accent/20 border border-jalan-accent text-jalan-accent p-3 rounded-full hover:bg-jalan-accent/30 transition-colors"
+        className="fixed bottom-20 right-6 bg-jalan-accent text-black font-medium px-4 py-2 rounded-full hover:brightness-110 transition-all"
       >
-        &gt; Chat Mentor
+        Chat Mentor →
       </Link>
       
       {/* Bottom navigation */}

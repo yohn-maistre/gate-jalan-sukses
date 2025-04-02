@@ -97,9 +97,9 @@
   @apply animate-text-appear opacity-0;
 }
 
-/* Bottom navigation styling */
+/* Bottom navigation styling - Redesigned */
 .bottom-nav {
-  @apply fixed bottom-0 left-0 right-0 h-16 bg-black/70 backdrop-blur-lg flex items-center justify-around border-t border-white/10;
+  @apply fixed bottom-0 left-0 right-0 h-16 bg-black/60 backdrop-blur-lg flex items-center justify-around;
 }
 
 /* Typeform-inspired form styling */
@@ -108,7 +108,7 @@
 }
 
 .typeform-button {
-  @apply text-jalan-accent bg-transparent hover:opacity-80 transition-all duration-200 py-2 px-4 rounded-md;
+  @apply text-jalan-accent bg-transparent hover:brightness-110 transition-all duration-200 py-2 px-4 rounded-md;
 }
 
 .typeform-option {
@@ -137,4 +137,63 @@
 /* Option button Typeform style */
 .option-button-typeform {
   @apply flex items-center px-4 py-3 rounded-md border border-jalan-secondary/30 w-full text-left mb-2 hover:border-jalan-accent hover:bg-jalan-accent/5 transition-all duration-200;
+}
+
+/* Animation for text appearance */
+@keyframes text-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-text-appear {
+  animation: text-appear 0.5s ease-out forwards;
+}
+
+/* Subtle pulse animation */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+/* Timeline styling */
+.timeline-dot {
+  @apply absolute left-[-4px] top-6 w-2 h-2 rounded-full transition-all;
+}
+
+/* Glassmorphism effect */
+.glass {
+  @apply bg-black/20 backdrop-blur-lg border border-white/10;
+}
+
+/* Floating button */
+.floating-button {
+  @apply fixed bottom-20 right-6 bg-jalan-accent text-black font-bold px-4 py-2 rounded-full shadow-lg hover:brightness-110 transition-all;
 }

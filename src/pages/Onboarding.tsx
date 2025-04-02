@@ -6,9 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRoadmap } from "@/contexts/RoadmapContext";
 import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 
 interface Question {
@@ -30,7 +28,7 @@ const Onboarding = () => {
   const [isTyping, setIsTyping] = useState(false);
   
   const mainContainerRef = useRef<HTMLDivElement>(null);
-  const form = useForm();
+  const { register, handleSubmit, getValues, setValue } = useForm();
   
   // Check if user is logged in
   useEffect(() => {
@@ -193,35 +191,24 @@ const Onboarding = () => {
             
             {question.type === "text" && index === currentQuestionIndex && (
               <div className="mt-8">
-                <Form {...form}>
-                  <FormField
-                    control={form.control}
-                    name={question.id}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="form-control-typeform">
-                            <Input
-                              className="border-none bg-transparent focus:outline-none focus:ring-0 pl-0 typeform-input"
-                              placeholder="Ketik di sini..."
-                              value={answers[question.id] || ""}
-                              onChange={(e) => field.onChange(e.target.value)}
-                              onKeyPress={(e) => {
-                                if (e.key === "Enter" && field.value && field.value.trim()) {
-                                  handleTextAnswer(field.value);
-                                }
-                              }}
-                              disabled={isLoading || isTyping}
-                            />
-                          </div>
-                        </FormControl>
-                      </FormItem>
-                    )}
+                <div className="form-control-typeform">
+                  <Input
+                    className="border-none bg-transparent focus:outline-none focus:ring-0 pl-0 typeform-input"
+                    placeholder="Ketik di sini..."
+                    value={answers[question.id] || ""}
+                    onChange={(e) => setValue(question.id, e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter" && answers[question.id]?.trim()) {
+                        handleTextAnswer(answers[question.id]);
+                      }
+                    }}
+                    disabled={isLoading || isTyping}
+                    {...register(question.id, { required: true })}
                   />
-                </Form>
+                </div>
                 <button
                   onClick={() => {
-                    const value = form.getValues(question.id);
+                    const value = getValues(question.id);
                     if (value && value.trim()) {
                       handleTextAnswer(value);
                     }

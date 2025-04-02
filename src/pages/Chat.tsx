@@ -5,8 +5,9 @@ import NavigationBar from "@/components/NavigationBar";
 import TypedText from "@/components/TypedText";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRoadmap } from "@/contexts/RoadmapContext";
-import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { cn } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -25,6 +26,7 @@ const Chat = () => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const form = useForm();
   
   // Check if user is logged in
   useEffect(() => {
@@ -139,32 +141,37 @@ const Chat = () => {
   
   return (
     <div className="min-h-screen flex flex-col bg-jalan-background">
-      <div className="p-4 border-b border-white/10">
-        <h1 className="text-xl font-bold text-jalan-text">Chat Mentor</h1>
+      <div className="p-6">
+        <h1 className="text-2xl font-bold text-jalan-text">Chat Mentor</h1>
+        <p className="text-jalan-secondary text-sm mt-1">Diskusikan langkahmu menuju "{roadmap.goal}"</p>
       </div>
       
-      {/* Chat messages */}
+      {/* Chat messages - Typeform style */}
       <div 
         ref={chatContainerRef}
-        className="flex-1 flex flex-col p-6 overflow-y-auto pb-24"
+        className="flex-1 flex flex-col px-6 pb-24 space-y-10"
       >
         {messages.map((message, index) => (
           <div
             key={message.id}
-            className={`my-3 max-w-[85%] ${message.isUser ? "self-end" : "self-start"} animate-text-appear opacity-0`}
+            className={cn(
+              "max-w-[90%] animate-text-appear opacity-0 my-6",
+              message.isUser ? "self-end" : "self-start"
+            )}
             style={{ animationDelay: `${index * 0.2}s` }}
           >
             {!message.isUser && (
-              <div className="mb-1 text-jalan-secondary text-xs">
+              <div className="mb-2 text-jalan-secondary text-xs uppercase tracking-wider">
                 Mentor
               </div>
             )}
             
-            <div className={`p-3 rounded-lg ${
+            <div className={cn(
+              "p-4 rounded-lg",
               message.isUser 
-                ? "bg-jalan-accent/10 text-jalan-text" 
-                : "bg-black/30 text-jalan-text border border-white/5"
-            }`}>
+                ? "bg-jalan-accent text-black font-medium" 
+                : "bg-black/20 text-jalan-text border border-white/10"
+            )}>
               {message.isUser ? (
                 message.content
               ) : (
@@ -172,19 +179,16 @@ const Chat = () => {
               )}
             </div>
             
-            {/* Options buttons */}
+            {/* Options buttons - Typeform style */}
             {!message.isUser && message.options && message.options.length > 0 && (
-              <div className="mt-3 space-y-2">
+              <div className="mt-4 space-y-3">
                 {message.options.map((option, optIndex) => (
                   <button
                     key={option.value}
                     onClick={() => handleOptionClick(option.value)}
-                    className="typeform-option block w-full text-left"
+                    className="option-button-typeform w-full block text-left"
                     style={{ animationDelay: `${optIndex * 0.1 + (message.content.length * 0.02)}s` }}
                   >
-                    <span className="mr-2 inline-block w-6 h-6 flex items-center justify-center rounded-full border border-jalan-secondary/30">
-                      {String.fromCharCode(65 + optIndex)}
-                    </span>
                     {option.label}
                   </button>
                 ))}
@@ -195,11 +199,11 @@ const Chat = () => {
         
         {/* Typing indicator */}
         {isTyping && (
-          <div className="self-start my-3 animate-fade-in">
-            <div className="mb-1 text-jalan-secondary text-xs">
+          <div className="self-start animate-fade-in my-6">
+            <div className="mb-2 text-jalan-secondary text-xs uppercase tracking-wider">
               Mentor
             </div>
-            <div className="bg-black/30 p-3 rounded-lg border border-white/5">
+            <div className="bg-black/20 p-4 rounded-lg border border-white/10">
               <div className="flex space-x-2">
                 <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse"></div>
                 <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse" style={{ animationDelay: "0.2s" }}></div>
@@ -212,34 +216,35 @@ const Chat = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      {/* Input area */}
-      <div className="fixed bottom-16 left-0 right-0 bg-black/90 border-t border-white/10 p-4">
-        <div className="flex items-center">
-          <Form>
-            <div className="flex w-full">
-              <Input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                placeholder="Ketik pesanmu di sini..."
-                className="typeform-input flex-1"
-                disabled={isTyping}
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={!input.trim() || isTyping}
-                className={`ml-2 p-2 rounded-full ${!input.trim() || isTyping ? "opacity-50" : "text-jalan-accent hover:bg-jalan-accent/10"} transition-all duration-200`}
-                aria-label="Send message"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-              </button>
-            </div>
-          </Form>
+      {/* Input area - Typeform style */}
+      <div className="fixed bottom-16 left-0 right-0 bg-black/80 backdrop-blur-md p-4">
+        <div className="max-w-4xl mx-auto flex items-center">
+          <Input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+            placeholder="Ketik pesanmu di sini..."
+            className="typeform-input flex-1 bg-transparent border-b border-jalan-secondary/50 focus:border-jalan-accent rounded-none px-0"
+            disabled={isTyping}
+          />
+          <button
+            onClick={handleSendMessage}
+            disabled={!input.trim() || isTyping}
+            className={cn(
+              "ml-4 p-2 rounded-full",
+              !input.trim() || isTyping 
+                ? "opacity-50 cursor-not-allowed" 
+                : "text-jalan-accent hover:bg-jalan-accent/10"
+            )}
+            aria-label="Send message"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          </button>
         </div>
       </div>
       
-      {/* Bottom navigation */}
+      {/* Bottom navigation - Seamless style */}
       <NavigationBar />
     </div>
   );

@@ -6,6 +6,7 @@ import TypedText from "@/components/TypedText";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRoadmap } from "@/contexts/RoadmapContext";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -47,9 +48,9 @@ const Profile = () => {
       <div className="p-6 pt-10">
         <h1 className="text-3xl font-bold text-jalan-text mb-8">Profil</h1>
         
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* User info */}
-          <div className="p-4 border border-white/10 rounded-md">
+          <div className="p-6 rounded-lg bg-black/20 backdrop-blur-sm border border-white/5">
             <h2 className="text-xl text-jalan-text">
               {user.name || (user.isGuest ? "Pengguna Tamu" : user.email)}
             </h2>
@@ -65,22 +66,22 @@ const Profile = () => {
             <div className="space-y-4">
               <h2 className="text-xl text-jalan-text">Insights</h2>
               
-              <div className="p-4 border border-white/10 rounded-md">
+              <div className="p-6 rounded-lg bg-black/20 backdrop-blur-sm border border-white/5">
                 <TypedText
                   text={`Kamu sudah ${progressPercentage.toFixed(0)}% menuju langkah jangka pendekmu.`}
                   className="text-jalan-text"
                   speed={30}
                 />
                 
-                <div className="h-1 w-full bg-jalan-secondary/30 rounded-full overflow-hidden mt-4">
+                <div className="h-2 w-full bg-jalan-secondary/10 rounded-full overflow-hidden mt-6">
                   <div 
-                    className="h-full bg-jalan-accent rounded-full"
+                    className="h-full bg-jalan-accent rounded-full transition-all duration-1000"
                     style={{ width: `${progressPercentage}%` }}
                   ></div>
                 </div>
               </div>
               
-              <div className="p-4 border border-white/10 rounded-md">
+              <div className="p-6 rounded-lg bg-black/20 backdrop-blur-sm border border-white/5">
                 {completedMilestones > 0 ? (
                   <TypedText
                     text={`Kamu telah menyelesaikan ${completedMilestones} dari ${totalMilestones} langkah. Luar biasa!`}
@@ -104,16 +105,24 @@ const Profile = () => {
           <div className="space-y-4 mt-8">
             <button 
               onClick={() => navigate("/roadmap-review")}
-              className="block w-full text-left text-jalan-accent hover:brightness-110 transition-all"
+              className={cn(
+                "option-button-typeform justify-between",
+                "group hover:border-jalan-accent hover:bg-jalan-accent/5"
+              )}
             >
-              &gt; Sesuaikan Peta Jalan
+              <span>Sesuaikan Peta Jalan</span>
+              <span className="text-jalan-accent group-hover:translate-x-1 transition-transform">→</span>
             </button>
             
             <button 
               onClick={handleLogout}
-              className="block w-full text-left text-jalan-accent hover:brightness-110 transition-all"
+              className={cn(
+                "option-button-typeform justify-between",
+                "group hover:border-jalan-accent hover:bg-jalan-accent/5"
+              )}
             >
-              &gt; Logout
+              <span>Logout</span>
+              <span className="text-jalan-accent group-hover:translate-x-1 transition-transform">→</span>
             </button>
           </div>
         </div>
