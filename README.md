@@ -1,18 +1,9 @@
-# Welcome to your Lovable project
+# Gate: Jalan Sukses
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/19fb34cd-a2c5-4e98-a991-05fe4d24a000
+Mentor AI yang membantu menghasilkan _Roadmaps_ berdasarkan obyektif yang ditentukan. Didasari Gemini Pro 2.5.
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/19fb34cd-a2c5-4e98-a991-05fe4d24a000) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
@@ -59,15 +50,3 @@ This project is built with .
 - React
 - shadcn-ui
 - Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/19fb34cd-a2c5-4e98-a991-05fe4d24a000) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
