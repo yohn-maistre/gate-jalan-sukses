@@ -115,10 +115,10 @@ const Chat = () => {
         {messages.map((message, index) => (
           <div
             key={message.id}
-            className={`my-2 max-w-[85%] ${message.isUser ? "self-end" : "self-start"} animate-text-appear opacity-0`}
+            className={`my-2 max-w-[85%] ${message.isUser ? "self-end" : "self-start"} typeform-appear`}
             style={{ animationDelay: `${index * 0.2}s` }}
           >
-            <div className={`p-2 ${message.isUser ? "text-jalan-secondary" : "text-jalan-text"}`}>
+            <div className={`p-2 ${message.isUser ? "text-jalan-secondary" : "text-jalan-text"} rounded-lg ${message.isUser ? "bg-jalan-accent/10" : ""}`}>
               {message.isUser ? (
                 message.content
               ) : (
@@ -130,7 +130,7 @@ const Chat = () => {
         
         {/* Typing indicator */}
         {isTyping && (
-          <div className="self-start my-2 p-2">
+          <div className="self-start my-2 p-2 typeform-appear">
             <div className="flex space-x-2">
               <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse"></div>
               <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse" style={{ animationDelay: "0.2s" }}></div>
@@ -151,15 +151,16 @@ const Chat = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             placeholder="Tanya mentormu..."
-            className="flex-1 bg-transparent border-b border-jalan-secondary focus:border-jalan-accent text-jalan-text outline-none py-2 px-0"
+            className="typeform-input"
             disabled={isTyping}
           />
           <button
             onClick={handleSendMessage}
             disabled={!input.trim() || isTyping}
-            className={`ml-2 text-jalan-accent p-2 ${!input.trim() || isTyping ? "opacity-50" : "hover:brightness-110"}`}
+            className={`ml-2 text-jalan-accent p-2 ${!input.trim() || isTyping ? "opacity-50" : "hover:opacity-80"} transition-all duration-200`}
           >
-            →
+            <span className="sr-only">Send</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
           </button>
         </div>
       </div>

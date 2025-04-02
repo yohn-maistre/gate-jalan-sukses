@@ -19,7 +19,7 @@ const Welcome = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-jalan-background p-6">
       <div className="max-w-md w-full space-y-10 text-center">
-        <div className="space-y-2">
+        <div className="space-y-2 typeform-appear">
           <h1 className="text-5xl font-bold text-jalan-text">
             <TypedText text="JALAN SUKSES" speed={70} onComplete={() => setShowButton(true)} />
           </h1>
@@ -30,12 +30,12 @@ const Welcome = () => {
         </div>
         
         {showButton && (
-          <div className="animate-text-appear opacity-0" style={{ animationDelay: "1.5s" }}>
+          <div className="animate-fade-in opacity-0" style={{ animationDelay: "1.5s" }}>
             <button
               onClick={() => navigate("/auth")}
-              className="text-jalan-accent text-lg hover:brightness-110 transition-all duration-200 group"
+              className="modern-link text-lg flex items-center justify-center mx-auto group"
             >
-              &gt; Mulai Sekarang
+              Mulai Sekarang
               <span className="inline-block ml-1 transition-transform duration-200 group-hover:translate-x-1">
                 →
               </span>

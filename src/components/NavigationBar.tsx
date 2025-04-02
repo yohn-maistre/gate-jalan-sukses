@@ -14,31 +14,31 @@ const NavigationBar = () => {
       <Link 
         to="/roadmap" 
         className={cn(
-          "px-4 py-2 text-sm", 
+          "px-4 py-2 text-sm transition-all duration-200", 
           isActive("/roadmap") ? "text-jalan-accent" : "text-jalan-secondary"
         )}
       >
-        &gt; Peta Jalan
+        Peta Jalan
       </Link>
       
       <Link 
         to="/chat" 
         className={cn(
-          "px-4 py-2 text-sm", 
+          "px-4 py-2 text-sm transition-all duration-200", 
           isActive("/chat") ? "text-jalan-accent" : "text-jalan-secondary"
         )}
       >
-        &gt; Chat Mentor
+        Chat Mentor
       </Link>
       
       <Link 
         to="/profile" 
         className={cn(
-          "px-4 py-2 text-sm", 
+          "px-4 py-2 text-sm transition-all duration-200", 
           isActive("/profile") ? "text-jalan-accent" : "text-jalan-secondary"
         )}
       >
-        &gt; Profil
+        Profil
       </Link>
     </div>
   );

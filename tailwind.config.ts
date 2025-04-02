@@ -63,12 +63,12 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Jalan Sukses custom colors
+				// Jalan Sukses custom colors - updated with softer accent
 				jalan: {
 					background: '#0A0A0A',
 					text: '#FFFFFF',
 					secondary: '#B0B0B0',
-					accent: '#39FF14',
+					accent: '#64D2FF', // Changed from neon green to a soft blue
 				}
 			},
 			fontFamily: {
@@ -122,6 +122,14 @@ export default {
 					'50%': {
 						opacity: '0.8'
 					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0'
+					},
+					'100%': {
+						opacity: '1'
+					}
 				}
 			},
 			animation: {
@@ -129,7 +137,8 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'text-appear': 'text-appear 0.5s ease-out forwards',
 				'text-stream': 'text-stream 1s ease-out forwards',
-				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite'
+				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
+				'fade-in': 'fade-in 0.5s ease-out forwards'
 			}
 		}
 	},

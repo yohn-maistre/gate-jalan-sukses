@@ -56,9 +56,9 @@ const TypedText: React.FC<TypedTextProps> = ({
   }, [text, speed, onComplete, isTyping]);
 
   return (
-    <span className={cn("whitespace-pre-wrap", className)}>
+    <span className={cn("whitespace-pre-wrap transition-all", className)}>
       {displayedText}
-      {isTyping && displayedText.length < text.length && <span className="animate-pulse">▋</span>}
+      {isTyping && displayedText.length < text.length && <span className="inline-block w-[3px] h-[1em] bg-jalan-accent animate-pulse-subtle ml-[1px]"></span>}
     </span>
   );
 };

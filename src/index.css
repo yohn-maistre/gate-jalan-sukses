@@ -58,7 +58,12 @@
   }
 }
 
-/* Text streaming animation */
+/* Typeform-style animations */
+.typeform-appear {
+  @apply animate-fade-in transition-all duration-300 ease-out;
+}
+
+/* Smooth text transitions */
 .text-stream-container {
   overflow: hidden;
 }
@@ -83,8 +88,9 @@
 .animate-delay-500 { animation-delay: 500ms; }
 .animate-delay-600 { animation-delay: 600ms; }
 
-.neon-link {
-  @apply text-jalan-accent hover:brightness-110 transition-all duration-200;
+/* Modern subtle link styling */
+.modern-link {
+  @apply text-jalan-accent hover:opacity-80 transition-all duration-200;
 }
 
 .chat-message {
@@ -94,4 +100,17 @@
 /* Bottom navigation styling */
 .bottom-nav {
   @apply fixed bottom-0 left-0 right-0 h-16 bg-black/70 backdrop-blur-lg flex items-center justify-around border-t border-white/10;
+}
+
+/* Typeform-inspired form styling */
+.typeform-input {
+  @apply w-full bg-transparent border-b border-jalan-secondary focus:border-jalan-accent py-3 px-0 text-jalan-text outline-none transition-all duration-200;
+}
+
+.typeform-button {
+  @apply text-jalan-accent bg-transparent hover:opacity-80 transition-all duration-200 py-2 px-4 rounded-md;
+}
+
+.typeform-option {
+  @apply block w-full text-left py-3 px-4 mb-2 border border-jalan-secondary/30 rounded-md hover:border-jalan-accent hover:bg-jalan-accent/5 transition-all duration-200 text-jalan-text;
 }
