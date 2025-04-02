@@ -28,7 +28,7 @@ const Onboarding = () => {
   const [isTyping, setIsTyping] = useState(false);
   
   const mainContainerRef = useRef<HTMLDivElement>(null);
-  const { register, handleSubmit, setValue, watch } = useForm();
+  const { register, handleSubmit, setValue, watch, reset } = useForm();
   
   // Check if user is logged in
   useEffect(() => {
@@ -97,11 +97,14 @@ const Onboarding = () => {
     
     if (!value || value.trim() === '') return;
     
+    // Update answers state
     setAnswers(prev => ({ ...prev, [questionId]: value }));
     
+    // Move to next question or submit
     if (currentQuestionIndex < questions.length - 1) {
       setTimeout(() => {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+        reset(); // Clear form for next question
       }, 500);
     } else {
       handleSubmitAllAnswers();
@@ -112,11 +115,14 @@ const Onboarding = () => {
     if (!questions[currentQuestionIndex]) return;
     
     const questionId = questions[currentQuestionIndex].id;
+    
+    // Update answers state
     setAnswers(prev => ({ ...prev, [questionId]: value }));
     
+    // Move to next question or submit
     if (currentQuestionIndex < questions.length - 1) {
       setTimeout(() => {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        setCurrentQuestionIndex(prevIndex => prevIndex + 1);
       }, 500);
     } else {
       handleSubmitAllAnswers();
@@ -131,6 +137,9 @@ const Onboarding = () => {
       title: "Memproses",
       description: "Membuat peta jalan berdasarkan informasi yang kamu berikan...",
     });
+    
+    // Ensure all answers are collected
+    console.log("Submitting answers:", answers);
     
     // Generate roadmap with all collected answers
     createRoadmap(answers.goal, { 
@@ -148,7 +157,8 @@ const Onboarding = () => {
           navigate("/roadmap-review");
         }, 2000);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("Error creating roadmap:", error);
         toast({
           title: "Error",
           description: "Gagal membuat peta jalan. Silakan coba lagi.",
@@ -205,16 +215,22 @@ const Onboarding = () => {
                     {...register(question.id)}
                     onKeyPress={(e) => {
                       if (e.key === "Enter" && textInputValue?.trim()) {
+                        e.preventDefault();
                         handleTextAnswer();
                       }
                     }}
                     disabled={isLoading || isTyping}
+                    autoFocus
                   />
                 </div>
                 <button
-                  onClick={handleTextAnswer}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleTextAnswer();
+                  }}
                   disabled={!textInputValue?.trim() || isLoading || isTyping}
                   className="mt-6 typeform-button"
+                  type="button"
                 >
                   Lanjutkan
                 </button>
