@@ -161,107 +161,111 @@ const Onboarding = () => {
       {questions.map((question, index) => (
         <div 
           key={question.id}
-          className={`min-h-screen flex flex-col p-8 snap-start ${index > currentQuestionIndex ? 'opacity-0' : 'animate-fade-in'}`}
+          className={`min-h-screen flex flex-col justify-center items-center p-8 snap-start ${index > currentQuestionIndex ? 'opacity-0' : 'animate-fade-in'}`}
           style={{ 
             animationDelay: `${index * 0.2}s`,
             pointerEvents: index === currentQuestionIndex ? 'auto' : 'none'
           }}
         >
-          <div className="mb-6 flex items-center text-jalan-secondary">
-            <span className="mr-2">{index + 1}</span>
-            <span className="mr-2">→</span>
-          </div>
-          
-          <h2 className="text-2xl font-bold mb-3 text-jalan-text">
-            {index <= currentQuestionIndex ? (
-              <TypedText 
-                text={question.content} 
-                speed={25} 
-                delay={index === 0 ? 500 : 200}
-              />
-            ) : (
-              question.content
-            )}
-          </h2>
-          
-          {question.description && (
-            <p className="text-jalan-secondary mb-8 text-sm">
-              {question.description}
-            </p>
-          )}
-          
-          {question.type === "text" && index === currentQuestionIndex && (
-            <div className="mt-4">
-              <Form {...form}>
-                <FormField
-                  control={form.control}
-                  name={question.id}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          className="typeform-input"
-                          placeholder="Ketik di sini..."
-                          value={answers[question.id] || ""}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          onKeyPress={(e) => {
-                            if (e.key === "Enter" && field.value && field.value.trim()) {
-                              handleTextAnswer(field.value);
-                            }
-                          }}
-                          disabled={isLoading || isTyping}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
+          <div className="max-w-md w-full">
+            <div className="mb-6 flex items-center text-jalan-secondary">
+              <span className="question-index">{index + 1}</span>
+              <span className="mr-2">→</span>
+            </div>
+            
+            <h2 className="text-2xl font-bold mb-3 text-jalan-text">
+              {index <= currentQuestionIndex ? (
+                <TypedText 
+                  text={question.content} 
+                  speed={25} 
+                  delay={index === 0 ? 500 : 200}
                 />
-              </Form>
-              <button
-                onClick={() => {
-                  const value = form.getValues(question.id);
-                  if (value && value.trim()) {
-                    handleTextAnswer(value);
-                  }
-                }}
-                disabled={isLoading || isTyping}
-                className="mt-4 text-jalan-accent hover:opacity-80 transition-all duration-200"
-              >
-                Lanjutkan
-              </button>
-            </div>
-          )}
-          
-          {question.type === "options" && index === currentQuestionIndex && question.options && (
-            <div className="mt-4 space-y-3">
-              <RadioGroup 
-                defaultValue={answers[question.id] || ""}
-                onValueChange={handleOptionSelect}
-              >
-                {question.options.map((option, optionIndex) => (
-                  <div 
-                    key={option.value}
-                    className="typeform-appear"
-                    style={{ animationDelay: `${optionIndex * 0.1 + 0.5}s` }}
-                  >
-                    <label
-                      className="typeform-option flex items-center"
-                      htmlFor={`option-${option.value}`}
+              ) : (
+                question.content
+              )}
+            </h2>
+            
+            {question.description && (
+              <p className="text-jalan-secondary mb-8 text-sm">
+                {question.description}
+              </p>
+            )}
+            
+            {question.type === "text" && index === currentQuestionIndex && (
+              <div className="mt-8">
+                <Form {...form}>
+                  <FormField
+                    control={form.control}
+                    name={question.id}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <div className="form-control-typeform">
+                            <Input
+                              className="border-none bg-transparent focus:outline-none focus:ring-0 pl-0 typeform-input"
+                              placeholder="Ketik di sini..."
+                              value={answers[question.id] || ""}
+                              onChange={(e) => field.onChange(e.target.value)}
+                              onKeyPress={(e) => {
+                                if (e.key === "Enter" && field.value && field.value.trim()) {
+                                  handleTextAnswer(field.value);
+                                }
+                              }}
+                              disabled={isLoading || isTyping}
+                            />
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </Form>
+                <button
+                  onClick={() => {
+                    const value = form.getValues(question.id);
+                    if (value && value.trim()) {
+                      handleTextAnswer(value);
+                    }
+                  }}
+                  disabled={isLoading || isTyping}
+                  className="mt-6 typeform-button"
+                >
+                  Lanjutkan
+                </button>
+              </div>
+            )}
+            
+            {question.type === "options" && index === currentQuestionIndex && question.options && (
+              <div className="mt-8 space-y-3 w-full">
+                <RadioGroup 
+                  defaultValue={answers[question.id] || ""}
+                  onValueChange={handleOptionSelect}
+                >
+                  {question.options.map((option, optionIndex) => (
+                    <div 
+                      key={option.value}
+                      className="typeform-appear"
+                      style={{ animationDelay: `${optionIndex * 0.1 + 0.5}s` }}
                     >
-                      <span className="mr-2 w-6 h-6 flex items-center justify-center rounded-full border border-jalan-secondary/30">
-                        {String.fromCharCode(65 + optionIndex)}
-                      </span>
-                      {option.label}
-                      <RadioGroupItem
-                        value={option.value}
-                        id={`option-${option.value}`}
-                        className="sr-only"
-                      />
-                    </label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-          )}
+                      <label
+                        className="option-button-typeform"
+                        htmlFor={`option-${option.value}`}
+                      >
+                        <span className="question-index mr-3">
+                          {String.fromCharCode(65 + optionIndex)}
+                        </span>
+                        {option.label}
+                        <RadioGroupItem
+                          value={option.value}
+                          id={`option-${option.value}`}
+                          className="sr-only"
+                        />
+                      </label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            )}
+          </div>
         </div>
       ))}
       

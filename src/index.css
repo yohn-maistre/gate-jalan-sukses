@@ -126,7 +126,7 @@
 
 /* Question index styles */
 .question-index {
-  @apply inline-flex items-center justify-center w-6 h-6 rounded-full border border-jalan-secondary/30 text-jalan-secondary text-xs mr-2;
+  @apply inline-flex items-center justify-center w-6 h-6 rounded-full border border-jalan-secondary/30 text-jalan-secondary text-xs;
 }
 
 /* Form control styles for Typeform look */
