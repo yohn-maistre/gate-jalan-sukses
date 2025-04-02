@@ -28,7 +28,7 @@ const Onboarding = () => {
   const [isTyping, setIsTyping] = useState(false);
   
   const mainContainerRef = useRef<HTMLDivElement>(null);
-  const { register, handleSubmit, getValues, setValue } = useForm();
+  const { register, handleSubmit, setValue, watch } = useForm();
   
   // Check if user is logged in
   useEffect(() => {
@@ -85,11 +85,18 @@ const Onboarding = () => {
       });
     }
   }, [currentQuestionIndex]);
+
+  // Track text input changes
+  const textInputValue = watch(questions[currentQuestionIndex]?.id || '');
   
-  const handleTextAnswer = (value: string) => {
+  const handleTextAnswer = () => {
     if (!questions[currentQuestionIndex]) return;
     
     const questionId = questions[currentQuestionIndex].id;
+    const value = textInputValue;
+    
+    if (!value || value.trim() === '') return;
+    
     setAnswers(prev => ({ ...prev, [questionId]: value }));
     
     if (currentQuestionIndex < questions.length - 1) {
@@ -195,25 +202,18 @@ const Onboarding = () => {
                   <Input
                     className="border-none bg-transparent focus:outline-none focus:ring-0 pl-0 typeform-input"
                     placeholder="Ketik di sini..."
-                    value={answers[question.id] || ""}
-                    onChange={(e) => setValue(question.id, e.target.value)}
+                    {...register(question.id)}
                     onKeyPress={(e) => {
-                      if (e.key === "Enter" && answers[question.id]?.trim()) {
-                        handleTextAnswer(answers[question.id]);
+                      if (e.key === "Enter" && textInputValue?.trim()) {
+                        handleTextAnswer();
                       }
                     }}
                     disabled={isLoading || isTyping}
-                    {...register(question.id, { required: true })}
                   />
                 </div>
                 <button
-                  onClick={() => {
-                    const value = getValues(question.id);
-                    if (value && value.trim()) {
-                      handleTextAnswer(value);
-                    }
-                  }}
-                  disabled={isLoading || isTyping}
+                  onClick={handleTextAnswer}
+                  disabled={!textInputValue?.trim() || isLoading || isTyping}
                   className="mt-6 typeform-button"
                 >
                   Lanjutkan
