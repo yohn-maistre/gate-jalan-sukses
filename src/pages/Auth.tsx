@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import TypedText from "@/components/TypedText";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,6 +14,8 @@ const Auth = () => {
   const [showForm, setShowForm] = useState(false);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [titleAnimationComplete, setTitleAnimationComplete] = useState(false);
+  const [subtitleAnimationComplete, setSubtitleAnimationComplete] = useState(false);
   
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,16 +66,32 @@ const Auth = () => {
       <div className="max-w-md w-full space-y-10">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold text-jalan-text">
-            <TypedText 
-              text="Mari kita mulai." 
-              speed={50} 
-              onComplete={() => setShowOptions(true)} 
-            />
+            {!titleAnimationComplete ? (
+              <TypedText 
+                text="Mari kita mulai." 
+                speed={50} 
+                onComplete={() => setTitleAnimationComplete(true)} 
+              />
+            ) : (
+              "Mari kita mulai."
+            )}
           </h1>
           
-          {showOptions && (
+          {titleAnimationComplete && (
             <p className="text-jalan-secondary text-lg mt-6">
-              <TypedText text="Pilih cara masuk:" speed={30} delay={200} onComplete={() => setShowForm(true)} />
+              {!subtitleAnimationComplete ? (
+                <TypedText 
+                  text="Pilih cara masuk:" 
+                  speed={30} 
+                  delay={200} 
+                  onComplete={() => {
+                    setSubtitleAnimationComplete(true);
+                    setShowForm(true);
+                  }} 
+                />
+              ) : (
+                "Pilih cara masuk:"
+              )}
             </p>
           )}
         </div>

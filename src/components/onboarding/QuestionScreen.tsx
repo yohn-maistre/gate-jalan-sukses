@@ -41,13 +41,14 @@ const QuestionScreen: React.FC<QuestionScreenProps> = ({
   return (
     <div 
       key={question.id}
-      className={`min-h-screen flex flex-col justify-center items-center p-8 snap-start transition-all duration-500 ${
+      className={`min-h-screen flex flex-col justify-center items-center p-8 snap-start absolute inset-0 transition-all duration-500 ${
         questionIndex > currentIndex 
           ? 'translate-x-full opacity-0' 
           : questionIndex < currentIndex 
             ? '-translate-x-full opacity-0' 
             : 'translate-x-0 opacity-100'
       }`}
+      style={{zIndex: questionIndex === currentIndex ? 10 : 1}}
     >
       <div className="max-w-md w-full">
         <div className="mb-6 flex items-center text-jalan-secondary">

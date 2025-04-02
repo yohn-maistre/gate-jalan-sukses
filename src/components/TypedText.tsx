@@ -19,22 +19,24 @@ const TypedText: React.FC<TypedTextProps> = ({
 }) => {
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
   const timeoutRef = useRef<number | null>(null);
+  const hasCompletedRef = useRef(false);
 
   useEffect(() => {
-    if (delay > 0) {
+    if (delay > 0 && !isTyping && !isComplete) {
       const delayTimeout = setTimeout(() => {
         setIsTyping(true);
       }, delay);
       
       return () => clearTimeout(delayTimeout);
-    } else {
+    } else if (!isTyping && !isComplete) {
       setIsTyping(true);
     }
-  }, [delay]);
+  }, [delay, isTyping, isComplete]);
 
   useEffect(() => {
-    if (!isTyping) return;
+    if (!isTyping || isComplete) return;
     
     let currentIndex = 0;
     
@@ -44,7 +46,12 @@ const TypedText: React.FC<TypedTextProps> = ({
         currentIndex++;
         timeoutRef.current = window.setTimeout(typeNextChar, speed);
       } else {
-        if (onComplete) onComplete();
+        setIsComplete(true);
+        setIsTyping(false);
+        if (onComplete && !hasCompletedRef.current) {
+          hasCompletedRef.current = true;
+          onComplete();
+        }
       }
     };
     
@@ -53,7 +60,14 @@ const TypedText: React.FC<TypedTextProps> = ({
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [text, speed, onComplete, isTyping]);
+  }, [text, speed, onComplete, isTyping, isComplete]);
+
+  // If the component re-renders but animation was already complete, show full text immediately
+  useEffect(() => {
+    if (isComplete && displayedText !== text) {
+      setDisplayedText(text);
+    }
+  }, [isComplete, text, displayedText]);
 
   return (
     <span className={cn("inline transition-all", className)}>

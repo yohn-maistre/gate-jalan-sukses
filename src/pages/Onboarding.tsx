@@ -17,7 +17,6 @@ const Onboarding = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   
-  const mainContainerRef = useRef<HTMLDivElement>(null);
   const { register, handleSubmit, setValue, watch, reset } = useForm();
   
   const { questions, isTyping, setIsTyping } = useOnboardingQuestions();
@@ -28,17 +27,6 @@ const Onboarding = () => {
       navigate("/auth");
     }
   }, [user, navigate]);
-  
-  // Auto-scroll to current question
-  useEffect(() => {
-    if (mainContainerRef.current && currentQuestionIndex > 0) {
-      const questionHeight = window.innerHeight;
-      mainContainerRef.current.scrollTo({
-        top: questionHeight * currentQuestionIndex,
-        behavior: "smooth"
-      });
-    }
-  }, [currentQuestionIndex]);
 
   // Track text input changes for the current question
   const textInputValue = watch(questions[currentQuestionIndex]?.id || '');
@@ -123,10 +111,7 @@ const Onboarding = () => {
   };
   
   return (
-    <div 
-      ref={mainContainerRef}
-      className="min-h-screen bg-jalan-background flex flex-col overflow-x-hidden"
-    >
+    <div className="min-h-screen bg-jalan-background flex flex-col overflow-hidden relative">
       {questions.map((question, index) => (
         <QuestionScreen
           key={question.id}
