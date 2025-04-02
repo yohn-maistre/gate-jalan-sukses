@@ -5,11 +5,17 @@ import TypedText from "@/components/TypedText";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRoadmap } from "@/contexts/RoadmapContext";
 import { useToast } from "@/hooks/use-toast";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 
-interface Message {
+interface Question {
   id: string;
   content: string;
-  isUser: boolean;
+  description?: string;
+  type: "text" | "options";
   options?: { label: string; value: string }[];
 }
 
@@ -18,14 +24,13 @@ const Onboarding = () => {
   const { user } = useAuth();
   const { createRoadmap, isLoading } = useRoadmap();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isTyping, setIsTyping] = useState(false);
-  const [userGoal, setUserGoal] = useState("");
-  const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
-  const [currentStep, setCurrentStep] = useState(0);
   
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const mainContainerRef = useRef<HTMLDivElement>(null);
+  const form = useForm();
   
   // Check if user is logged in
   useEffect(() => {
@@ -34,198 +39,240 @@ const Onboarding = () => {
     }
   }, [user, navigate]);
   
-  // Initial greeting message
+  // Initial question setup
   useEffect(() => {
-    if (messages.length === 0) {
+    if (questions.length === 0) {
       setIsTyping(true);
       setTimeout(() => {
-        setMessages([
+        setQuestions([
           {
-            id: "1",
-            content: "Halo! Aku mentor virtualmu. Apa mimpimu dalam 5 tahun ke depan?",
-            isUser: false,
-            options: []
+            id: "goal",
+            content: "Apa mimpimu dalam 5 tahun ke depan?",
+            description: "Ceritakan tujuan atau impian yang ingin kamu capai",
+            type: "text"
+          },
+          {
+            id: "education",
+            content: "Apakah kamu sudah SMA atau kuliah?",
+            description: "Ini akan membantu kami menyesuaikan roadmap untukmu",
+            type: "options",
+            options: [
+              { label: "SMA", value: "sma" },
+              { label: "Kuliah", value: "kuliah" }
+            ]
+          },
+          {
+            id: "focus",
+            content: "Ingin fokus ke pendidikan atau langsung cari pengalaman?",
+            description: "Pilih jalur yang paling sesuai dengan tujuanmu",
+            type: "options",
+            options: [
+              { label: "Pendidikan", value: "pendidikan" },
+              { label: "Pengalaman", value: "pengalaman" }
+            ]
           }
         ]);
         setIsTyping(false);
       }, 1000);
     }
-  }, [messages.length]);
+  }, []);
   
-  // Scroll to bottom when messages change
+  // Auto-scroll to current question
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (mainContainerRef.current && currentQuestionIndex > 0) {
+      const questionHeight = window.innerHeight;
+      mainContainerRef.current.scrollTo({
+        top: questionHeight * currentQuestionIndex,
+        behavior: "smooth"
+      });
+    }
+  }, [currentQuestionIndex]);
   
-  const handleSendMessage = () => {
-    if (!input.trim() || isTyping) return;
+  const handleTextAnswer = (value: string) => {
+    if (!questions[currentQuestionIndex]) return;
     
-    const userMessage: Message = {
-      id: `user_${messages.length}`,
-      content: input,
-      isUser: true
-    };
+    const questionId = questions[currentQuestionIndex].id;
+    setAnswers(prev => ({ ...prev, [questionId]: value }));
     
-    setMessages(prev => [...prev, userMessage]);
-    setInput("");
-    setIsTyping(true);
-    
-    // Process the user's message based on the current step
-    switch (currentStep) {
-      case 0: // Initial goal setting
-        setUserGoal(input);
-        setTimeout(() => {
-          setMessages(prev => [...prev, {
-            id: `bot_${messages.length + 1}`,
-            content: "Terima kasih telah berbagi mimpimu. Apakah kamu sudah SMA atau kuliah?",
-            isUser: false,
-            options: [
-              { label: "SMA", value: "sma" },
-              { label: "Kuliah", value: "kuliah" }
-            ]
-          }]);
-          setIsTyping(false);
-          setCurrentStep(1);
-        }, 1500);
-        break;
-        
-      case 1: // Education level
-        setAdditionalInfo(prev => ({ ...prev, educationLevel: input }));
-        setTimeout(() => {
-          setMessages(prev => [...prev, {
-            id: `bot_${messages.length + 1}`,
-            content: "Ingin fokus ke pendidikan atau langsung cari pengalaman?",
-            isUser: false,
-            options: [
-              { label: "Pendidikan", value: "pendidikan" },
-              { label: "Pengalaman", value: "pengalaman" }
-            ]
-          }]);
-          setIsTyping(false);
-          setCurrentStep(2);
-        }, 1500);
-        break;
-        
-      case 2: // Focus area
-        setAdditionalInfo(prev => ({ ...prev, focusArea: input }));
-        setTimeout(() => {
-          setMessages(prev => [...prev, {
-            id: `bot_${messages.length + 1}`,
-            content: "Bagus! Aku akan membuat peta jalan untukmu berdasarkan informasi yang kamu berikan. Tunggu sebentar ya...",
-            isUser: false
-          }]);
-          setIsTyping(false);
-          
-          // Generate roadmap
-          createRoadmap(userGoal, { ...additionalInfo, focusArea: input })
-            .then(() => {
-              setTimeout(() => {
-                setMessages(prev => [...prev, {
-                  id: `bot_${messages.length + 2}`,
-                  content: "Peta jalanmu siap! Mari kita tinjau bersama.",
-                  isUser: false
-                }]);
-                
-                // Navigate to roadmap review page after a short delay
-                setTimeout(() => {
-                  navigate("/roadmap-review");
-                }, 2000);
-              }, 2000);
-            })
-            .catch(() => {
-              toast({
-                title: "Error",
-                description: "Gagal membuat peta jalan. Silakan coba lagi.",
-                variant: "destructive"
-              });
-              setIsTyping(false);
-            });
-        }, 1500);
-        break;
-        
-      default:
-        setIsTyping(false);
-        break;
+    if (currentQuestionIndex < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      }, 500);
+    } else {
+      handleSubmitAllAnswers();
     }
   };
   
-  const handleOptionClick = (value: string) => {
-    setInput(value);
-    setTimeout(() => {
-      handleSendMessage();
-    }, 100);
+  const handleOptionSelect = (value: string) => {
+    if (!questions[currentQuestionIndex]) return;
+    
+    const questionId = questions[currentQuestionIndex].id;
+    setAnswers(prev => ({ ...prev, [questionId]: value }));
+    
+    if (currentQuestionIndex < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      }, 500);
+    } else {
+      handleSubmitAllAnswers();
+    }
+  };
+  
+  const handleSubmitAllAnswers = () => {
+    setIsTyping(true);
+    
+    // Show a generating message
+    toast({
+      title: "Memproses",
+      description: "Membuat peta jalan berdasarkan informasi yang kamu berikan...",
+    });
+    
+    // Generate roadmap with all collected answers
+    createRoadmap(answers.goal, { 
+      educationLevel: answers.education, 
+      focusArea: answers.focus 
+    })
+      .then(() => {
+        toast({
+          title: "Sukses",
+          description: "Peta jalanmu siap! Mari kita tinjau bersama.",
+        });
+        
+        // Navigate to roadmap review page after a short delay
+        setTimeout(() => {
+          navigate("/roadmap-review");
+        }, 2000);
+      })
+      .catch(() => {
+        toast({
+          title: "Error",
+          description: "Gagal membuat peta jalan. Silakan coba lagi.",
+          variant: "destructive"
+        });
+        setIsTyping(false);
+      });
   };
   
   return (
-    <div className="min-h-screen flex flex-col bg-jalan-background">
-      {/* Chat messages */}
-      <div className="flex-1 flex flex-col p-4 overflow-y-auto pb-20">
-        {messages.map((message, index) => (
-          <div
-            key={message.id}
-            className={`my-2 max-w-[85%] ${message.isUser ? "self-end" : "self-start"} animate-text-appear opacity-0`}
-            style={{ animationDelay: `${index * 0.2}s` }}
-          >
-            <div className={`p-2 ${message.isUser ? "text-jalan-secondary" : "text-jalan-text"}`}>
-              {message.isUser ? (
-                message.content
-              ) : (
-                <TypedText text={message.content} speed={20} />
-              )}
-            </div>
-            
-            {/* Options buttons */}
-            {!message.isUser && message.options && message.options.length > 0 && (
-              <div className="mt-2 space-y-2">
-                {message.options.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => handleOptionClick(option.value)}
-                    className="block text-jalan-accent hover:brightness-110 transition-all duration-200"
-                  >
-                    &gt; {option.label}
-                  </button>
-                ))}
-              </div>
+    <div 
+      ref={mainContainerRef}
+      className="min-h-screen bg-jalan-background flex flex-col overflow-y-auto snap-y snap-mandatory"
+    >
+      {questions.map((question, index) => (
+        <div 
+          key={question.id}
+          className={`min-h-screen flex flex-col p-8 snap-start ${index > currentQuestionIndex ? 'opacity-0' : 'animate-fade-in'}`}
+          style={{ 
+            animationDelay: `${index * 0.2}s`,
+            pointerEvents: index === currentQuestionIndex ? 'auto' : 'none'
+          }}
+        >
+          <div className="mb-6 flex items-center text-jalan-secondary">
+            <span className="mr-2">{index + 1}</span>
+            <span className="mr-2">→</span>
+          </div>
+          
+          <h2 className="text-2xl font-bold mb-3 text-jalan-text">
+            {index <= currentQuestionIndex ? (
+              <TypedText 
+                text={question.content} 
+                speed={25} 
+                delay={index === 0 ? 500 : 200}
+              />
+            ) : (
+              question.content
             )}
-          </div>
-        ))}
-        
-        {/* Typing indicator */}
-        {isTyping && (
-          <div className="self-start my-2 p-2">
-            <div className="flex space-x-2">
-              <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse"></div>
-              <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse" style={{ animationDelay: "0.2s" }}></div>
-              <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse" style={{ animationDelay: "0.4s" }}></div>
+          </h2>
+          
+          {question.description && (
+            <p className="text-jalan-secondary mb-8 text-sm">
+              {question.description}
+            </p>
+          )}
+          
+          {question.type === "text" && index === currentQuestionIndex && (
+            <div className="mt-4">
+              <Form {...form}>
+                <FormField
+                  control={form.control}
+                  name={question.id}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          className="typeform-input"
+                          placeholder="Ketik di sini..."
+                          value={answers[question.id] || ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter" && field.value && field.value.trim()) {
+                              handleTextAnswer(field.value);
+                            }
+                          }}
+                          disabled={isLoading || isTyping}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </Form>
+              <button
+                onClick={() => {
+                  const value = form.getValues(question.id);
+                  if (value && value.trim()) {
+                    handleTextAnswer(value);
+                  }
+                }}
+                disabled={isLoading || isTyping}
+                className="mt-4 text-jalan-accent hover:opacity-80 transition-all duration-200"
+              >
+                Lanjutkan
+              </button>
             </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
-      
-      {/* Input area */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/90 border-t border-white/10 p-4">
-        <div className="flex items-center">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-            placeholder="Ketik di sini..."
-            className="flex-1 bg-transparent border-b border-jalan-secondary focus:border-jalan-accent text-jalan-text outline-none py-2 px-0"
-            disabled={isTyping || isLoading}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={!input.trim() || isTyping || isLoading}
-            className={`ml-2 text-jalan-accent p-2 ${!input.trim() || isTyping || isLoading ? "opacity-50" : "hover:brightness-110"}`}
-          >
-            →
-          </button>
+          )}
+          
+          {question.type === "options" && index === currentQuestionIndex && question.options && (
+            <div className="mt-4 space-y-3">
+              <RadioGroup 
+                defaultValue={answers[question.id] || ""}
+                onValueChange={handleOptionSelect}
+              >
+                {question.options.map((option, optionIndex) => (
+                  <div 
+                    key={option.value}
+                    className="typeform-appear"
+                    style={{ animationDelay: `${optionIndex * 0.1 + 0.5}s` }}
+                  >
+                    <label
+                      className="typeform-option flex items-center"
+                      htmlFor={`option-${option.value}`}
+                    >
+                      <span className="mr-2 w-6 h-6 flex items-center justify-center rounded-full border border-jalan-secondary/30">
+                        {String.fromCharCode(65 + optionIndex)}
+                      </span>
+                      {option.label}
+                      <RadioGroupItem
+                        value={option.value}
+                        id={`option-${option.value}`}
+                        className="sr-only"
+                      />
+                    </label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+          )}
         </div>
-      </div>
+      ))}
+      
+      {/* Typing indicator at bottom */}
+      {isTyping && (
+        <div className="fixed bottom-8 left-8 flex space-x-2 animate-fade-in">
+          <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse"></div>
+          <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse" style={{ animationDelay: "0.2s" }}></div>
+          <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse" style={{ animationDelay: "0.4s" }}></div>
+        </div>
+      )}
     </div>
   );
 };

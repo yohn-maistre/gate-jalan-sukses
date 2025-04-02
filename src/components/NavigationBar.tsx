@@ -1,6 +1,7 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { MapIcon, MessageCircleIcon, UserIcon } from "lucide-react";
 
 const NavigationBar = () => {
   const location = useLocation();
@@ -14,31 +15,34 @@ const NavigationBar = () => {
       <Link 
         to="/roadmap" 
         className={cn(
-          "px-4 py-2 text-sm transition-all duration-200", 
+          "flex flex-col items-center justify-center px-4 py-1 text-xs transition-all duration-200", 
           isActive("/roadmap") ? "text-jalan-accent" : "text-jalan-secondary"
         )}
       >
-        Peta Jalan
+        <MapIcon size={20} className="mb-1" />
+        <span>Peta Jalan</span>
       </Link>
       
       <Link 
         to="/chat" 
         className={cn(
-          "px-4 py-2 text-sm transition-all duration-200", 
+          "flex flex-col items-center justify-center px-4 py-1 text-xs transition-all duration-200", 
           isActive("/chat") ? "text-jalan-accent" : "text-jalan-secondary"
         )}
       >
-        Chat Mentor
+        <MessageCircleIcon size={20} className="mb-1" />
+        <span>Chat Mentor</span>
       </Link>
       
       <Link 
         to="/profile" 
         className={cn(
-          "px-4 py-2 text-sm transition-all duration-200", 
+          "flex flex-col items-center justify-center px-4 py-1 text-xs transition-all duration-200", 
           isActive("/profile") ? "text-jalan-accent" : "text-jalan-secondary"
         )}
       >
-        Profil
+        <UserIcon size={20} className="mb-1" />
+        <span>Profil</span>
       </Link>
     </div>
   );

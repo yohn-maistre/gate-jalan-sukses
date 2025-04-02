@@ -104,7 +104,7 @@
 
 /* Typeform-inspired form styling */
 .typeform-input {
-  @apply w-full bg-transparent border-b border-jalan-secondary focus:border-jalan-accent py-3 px-0 text-jalan-text outline-none transition-all duration-200;
+  @apply w-full bg-transparent border-b border-jalan-secondary/50 focus:border-jalan-accent py-3 px-0 text-jalan-text outline-none transition-all duration-200;
 }
 
 .typeform-button {
@@ -113,4 +113,28 @@
 
 .typeform-option {
   @apply block w-full text-left py-3 px-4 mb-2 border border-jalan-secondary/30 rounded-md hover:border-jalan-accent hover:bg-jalan-accent/5 transition-all duration-200 text-jalan-text;
+}
+
+/* Snap scrolling for Typeform-like experience */
+.snap-y {
+  scroll-snap-type: y mandatory;
+}
+
+.snap-start {
+  scroll-snap-align: start;
+}
+
+/* Question index styles */
+.question-index {
+  @apply inline-flex items-center justify-center w-6 h-6 rounded-full border border-jalan-secondary/30 text-jalan-secondary text-xs mr-2;
+}
+
+/* Form control styles for Typeform look */
+.form-control-typeform {
+  @apply border-b border-jalan-secondary/30 focus-within:border-jalan-accent transition-all duration-200;
+}
+
+/* Option button Typeform style */
+.option-button-typeform {
+  @apply flex items-center px-4 py-3 rounded-md border border-jalan-secondary/30 w-full text-left mb-2 hover:border-jalan-accent hover:bg-jalan-accent/5 transition-all duration-200;
 }
