@@ -161,15 +161,16 @@ Roadmap harus kontekstual dengan sistem pendidikan dan peluang karir di Indonesi
     roadmapContext?: string
   ): Promise<string> => {
     try {
-      // Format messages for Gemini API
+      // Format messages for Gemini API - fixing the type error
       const formattedMessages = messages.map(msg => ({
-        role: msg.role === "user" ? "user" : "model", 
+        role: msg.role === "user" ? "user" as const : "model" as const, 
         parts: [{ text: msg.content }]
       }));
       
       // Add system context if roadmap is provided
+      let contextualMessages = [...formattedMessages];
       if (roadmapContext) {
-        formattedMessages.unshift({
+        contextualMessages.unshift({
           role: "user" as const,
           parts: [{ 
             text: `Berikut adalah konteks roadmap pengguna: ${roadmapContext}. 
@@ -180,7 +181,7 @@ Roadmap harus kontekstual dengan sistem pendidikan dan peluang karir di Indonesi
       }
       
       // Generate response
-      const response = await callGeminiAPI(formattedMessages);
+      const response = await callGeminiAPI(contextualMessages);
       return response;
     } catch (error) {
       console.error("Error generating chat response:", error);

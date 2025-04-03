@@ -1,4 +1,3 @@
-
 import { useModelConfig } from "@/contexts/ModelConfigContext";
 
 // API endpoints
@@ -38,7 +37,7 @@ interface GeminiRequestOptions {
   }>;
 }
 
-interface GeminiChatMessage {
+export interface GeminiChatMessage {
   role: "user" | "model";
   parts: Array<{
     text: string;
