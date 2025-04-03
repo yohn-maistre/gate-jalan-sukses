@@ -7,17 +7,7 @@ import { useRoadmap } from "@/contexts/RoadmapContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
-
-const getMotivationalMessage = () => {
-  const messages = [
-    "Kamu sedang on track untuk mencapai mimpimu!",
-    "Setiap langkah kecil membawamu lebih dekat ke tujuan!",
-    "Progress is progress, no matter how small.",
-    "Teruslah melangkah, meskipun pelan!"
-  ];
-  
-  return messages[Math.floor(Math.random() * messages.length)];
-};
+import { generateMotivationalMessage } from "@/lib/llm";
 
 const Roadmap = () => {
   const navigate = useNavigate();
@@ -38,15 +28,27 @@ const Roadmap = () => {
       return;
     }
     
-    // Set a random motivational message
-    setMotivationalMessage(getMotivationalMessage());
+    // Get a motivational message from LLM
+    const fetchMotivationalMessage = async () => {
+      try {
+        const message = await generateMotivationalMessage(roadmap.goal);
+        setMotivationalMessage(message);
+        
+        // Show the motivation message after a delay
+        setTimeout(() => {
+          setShowMotivation(true);
+        }, 1500);
+      } catch (error) {
+        console.error("Error fetching motivational message:", error);
+        // Fallback to default message
+        setMotivationalMessage("Teruslah melangkah, kamu pasti bisa!");
+        setTimeout(() => {
+          setShowMotivation(true);
+        }, 1500);
+      }
+    };
     
-    // Show the motivation message after a delay
-    const timer = setTimeout(() => {
-      setShowMotivation(true);
-    }, 1500);
-    
-    return () => clearTimeout(timer);
+    fetchMotivationalMessage();
   }, [roadmap, user, navigate]);
   
   const handleCompleteMilestone = async (milestoneId: string) => {

@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { generateRoadmap } from "@/lib/llm";
+import { generateRoadmap as llmGenerateRoadmap } from "@/lib/llm";
+import { useToast } from "@/hooks/use-toast";
 
 interface Resource {
   title: string;
@@ -52,6 +53,7 @@ export const RoadmapProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
   const [activeRoadmapId, setActiveRoadmapId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { toast } = useToast();
 
   // Get the active roadmap
   const roadmap = activeRoadmapId 
@@ -62,23 +64,41 @@ export const RoadmapProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Load roadmaps from localStorage
     const storedRoadmaps = localStorage.getItem("jalanSuksesRoadmaps");
     if (storedRoadmaps) {
-      const parsedRoadmaps = JSON.parse(storedRoadmaps) as Roadmap[];
-      setRoadmaps(parsedRoadmaps);
-      
-      // Set active roadmap from localStorage or use the first one
-      const storedActiveId = localStorage.getItem("jalanSuksesActiveRoadmap");
-      if (storedActiveId && parsedRoadmaps.some(r => r.id === storedActiveId)) {
-        setActiveRoadmapId(storedActiveId);
-      } else if (parsedRoadmaps.length > 0) {
-        setActiveRoadmapId(parsedRoadmaps[0].id);
-        localStorage.setItem("jalanSuksesActiveRoadmap", parsedRoadmaps[0].id);
+      try {
+        const parsedRoadmaps = JSON.parse(storedRoadmaps) as Roadmap[];
+        setRoadmaps(parsedRoadmaps);
+        
+        // Set active roadmap from localStorage or use the first one
+        const storedActiveId = localStorage.getItem("jalanSuksesActiveRoadmap");
+        if (storedActiveId && parsedRoadmaps.some(r => r.id === storedActiveId)) {
+          setActiveRoadmapId(storedActiveId);
+        } else if (parsedRoadmaps.length > 0) {
+          setActiveRoadmapId(parsedRoadmaps[0].id);
+          localStorage.setItem("jalanSuksesActiveRoadmap", parsedRoadmaps[0].id);
+        }
+      } catch (error) {
+        console.error("Error parsing stored roadmaps:", error);
+        toast({
+          title: "Error",
+          description: "Gagal memuat data tersimpan. Memulai dengan data baru.",
+          variant: "destructive"
+        });
       }
     }
-  }, []);
+  }, [toast]);
 
   const saveRoadmaps = (newRoadmaps: Roadmap[]) => {
     setRoadmaps(newRoadmaps);
-    localStorage.setItem("jalanSuksesRoadmaps", JSON.stringify(newRoadmaps));
+    try {
+      localStorage.setItem("jalanSuksesRoadmaps", JSON.stringify(newRoadmaps));
+    } catch (error) {
+      console.error("Error saving roadmaps to localStorage:", error);
+      toast({
+        title: "Perhatian",
+        description: "Gagal menyimpan data secara lokal. Pastikan browser Anda mendukung localStorage.",
+        variant: "destructive"
+      });
+    }
   };
 
   const setActiveRoadmap = (roadmapId: string) => {
@@ -89,8 +109,8 @@ export const RoadmapProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const createRoadmap = async (goal: string, additionalInfo: Record<string, string>) => {
     setIsLoading(true);
     try {
-      // In a real app, this would call the LLM API via the llm.ts module
-      const llmResponse = await generateRoadmap({ goal, userInfo: additionalInfo });
+      // Call the LLM service to generate a roadmap
+      const llmResponse = await llmGenerateRoadmap({ goal, userInfo: additionalInfo });
       
       // Create a new roadmap from the LLM response
       const newRoadmap: Roadmap = {
@@ -113,8 +133,18 @@ export const RoadmapProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const updatedRoadmaps = [...roadmaps, newRoadmap];
       saveRoadmaps(updatedRoadmaps);
       setActiveRoadmap(newRoadmap.id);
+      
+      toast({
+        title: "Sukses",
+        description: "Peta jalan berhasil dibuat!",
+      });
     } catch (error) {
       console.error("Error creating roadmap:", error);
+      toast({
+        title: "Error",
+        description: "Gagal membuat peta jalan. Silakan coba lagi.",
+        variant: "destructive"
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -124,9 +154,6 @@ export const RoadmapProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const updateRoadmap = async (updatedRoadmap: Roadmap) => {
     setIsLoading(true);
     try {
-      // In a real app, this would call an API to update the roadmap
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       const newRoadmap = {
         ...updatedRoadmap,
         updatedAt: new Date().toISOString()
@@ -137,8 +164,18 @@ export const RoadmapProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
       
       saveRoadmaps(updatedRoadmaps);
+      
+      toast({
+        title: "Sukses",
+        description: "Peta jalan berhasil diperbarui!",
+      });
     } catch (error) {
       console.error("Error updating roadmap:", error);
+      toast({
+        title: "Error",
+        description: "Gagal memperbarui peta jalan. Silakan coba lagi.",
+        variant: "destructive"
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -150,14 +187,31 @@ export const RoadmapProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     setIsLoading(true);
     try {
-      // In a real app, this would call an API to update the milestone
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const updatedMilestones = roadmap.milestones.map(milestone => 
-        milestone.id === milestoneId 
-          ? { ...milestone, status: "completed" as const } 
-          : milestone
-      );
+      const updatedMilestones = roadmap.milestones.map((milestone, index, array) => {
+        // Mark the current milestone as completed
+        if (milestone.id === milestoneId) {
+          return { ...milestone, status: "completed" as const };
+        }
+        
+        // Find the next upcoming milestone to mark as in-progress
+        const isCurrentMilestoneCompleted = milestone.id === milestoneId || 
+          milestone.status === "completed";
+          
+        const nextIndex = array.findIndex(m => 
+          m.status === "upcoming" && array.slice(0, array.indexOf(m))
+            .every(prev => prev.id === milestoneId || prev.status === "completed")
+        );
+        
+        if (
+          nextIndex !== -1 && 
+          index === nextIndex && 
+          isCurrentMilestoneCompleted
+        ) {
+          return { ...milestone, status: "in-progress" as const };
+        }
+        
+        return milestone;
+      });
       
       const updatedRoadmap = {
         ...roadmap,
@@ -170,8 +224,18 @@ export const RoadmapProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
       
       saveRoadmaps(updatedRoadmaps);
+      
+      toast({
+        title: "Sukses",
+        description: "Milestone berhasil diselesaikan!",
+      });
     } catch (error) {
       console.error("Error completing milestone:", error);
+      toast({
+        title: "Error",
+        description: "Gagal menyelesaikan milestone. Silakan coba lagi.",
+        variant: "destructive"
+      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -180,7 +244,13 @@ export const RoadmapProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const deleteRoadmap = (roadmapId: string) => {
     // Don't allow deleting the last roadmap
-    if (roadmaps.length <= 1) return;
+    if (roadmaps.length <= 1) {
+      toast({
+        title: "Perhatian",
+        description: "Tidak dapat menghapus peta jalan terakhir.",
+      });
+      return;
+    }
     
     const updatedRoadmaps = roadmaps.filter(r => r.id !== roadmapId);
     saveRoadmaps(updatedRoadmaps);
@@ -189,6 +259,11 @@ export const RoadmapProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (activeRoadmapId === roadmapId && updatedRoadmaps.length > 0) {
       setActiveRoadmap(updatedRoadmaps[0].id);
     }
+    
+    toast({
+      title: "Sukses",
+      description: "Peta jalan berhasil dihapus.",
+    });
   };
 
   return (

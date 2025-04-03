@@ -1,9 +1,25 @@
-# Gate: Jalan Sukses
 
-## Project info
+# Jalan Sukses (Path to Success)
 
-Mentor AI yang membantu menghasilkan **peta jalan** berdasarkan obyektif yang ditentukan. Didasari Gemini Pro 2.5.
+## Project Info
 
+Jalan Sukses adalah aplikasi mentorship yang menggunakan AI untuk membantu pemuda Indonesia membuat **peta jalan** berdasarkan obyektif yang ditentukan. Didasari Google Gemini Pro 2.5.
+
+### Fitur Utama
+- Pembuatan peta jalan personal berdasarkan tujuan pengguna
+- Pertanyaan lanjutan yang dinamis untuk menggali tujuan lebih dalam
+- Sumber daya yang disesuaikan untuk setiap langkah
+- Pelacakan kemajuan dan pesan motivasi
+- Chat dengan mentor AI untuk mendapatkan bantuan
+
+### Teknologi
+- Vite + React + TypeScript
+- Tailwind CSS + shadcn/ui
+- Google Gemini Pro 2.5
+- React Router
+- React Query
+
+## Development
 
 **Use your preferred IDE**
 
@@ -41,12 +57,17 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## Implementasi LLM
 
-This project is built with .
+Project menggunakan Google Gemini Pro 2.5 untuk:
+1. Generasi peta jalan berdasarkan input pengguna
+2. Chat interaktif dengan konteks peta jalan
+3. Pesan motivasi dinamis
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Implementasi dibuat dengan struktur modular:
+- ModelConfigContext - Konfigurasi model
+- GeminiService - Komunikasi API
+- RoadmapGenerator - Pembuatan peta jalan
+- llm.ts - Interface utama
+
+Lihat file PROJECT_CONTEXT.md untuk dokumentasi lengkap tentang implementasi LLM.

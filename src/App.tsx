@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { RoadmapProvider } from "./contexts/RoadmapContext";
+import { ModelConfigProvider } from "./contexts/ModelConfigContext";
 
 // Pages
 import Welcome from "./pages/Welcome";
@@ -40,26 +41,28 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RoadmapProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Welcome />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/roadmap-review" element={<RoadmapReview />} />
-                <Route path="/roadmap" element={<Roadmap />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/chat" element={<Chat />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </RoadmapProvider>
-      </AuthProvider>
+      <ModelConfigProvider>
+        <AuthProvider>
+          <RoadmapProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Welcome />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/roadmap-review" element={<RoadmapReview />} />
+                  <Route path="/roadmap" element={<Roadmap />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/chat" element={<Chat />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </RoadmapProvider>
+        </AuthProvider>
+      </ModelConfigProvider>
     </QueryClientProvider>
   );
 };
