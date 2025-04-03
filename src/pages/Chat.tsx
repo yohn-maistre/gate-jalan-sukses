@@ -1,32 +1,61 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import NavigationBar from "@/components/NavigationBar";
+import { useNavigate, Link } from "react-router-dom";
 import TypedText from "@/components/TypedText";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRoadmap } from "@/contexts/RoadmapContext";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
+import { ArrowLeft, Menu, BookmarkIcon } from "lucide-react";
+import { generateChatResponse } from "@/lib/llm";
+import ChatMessageContextMenu from "@/components/ChatMessageContextMenu";
+import ChatHistorySidebar from "@/components/ChatHistorySidebar";
+import MainSidebar from "@/components/MainSidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
   content: string;
   isUser: boolean;
   options?: { label: string; value: string }[];
+  timestamp?: string;
+}
+
+interface SavedMessage {
+  id: string;
+  content: string;
+  timestamp: string;
 }
 
 const Chat = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { roadmap } = useRoadmap();
+  const { roadmap, roadmaps } = useRoadmap();
+  const isMobile = useIsMobile();
+  
+  // State for messages and input
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   
+  // State for sidebars
+  const [isMainSidebarOpen, setIsMainSidebarOpen] = useState(false);
+  const [isChatHistorySidebarOpen, setIsChatHistorySidebarOpen] = useState(false);
+  
+  // State for context menu
+  const [contextMenu, setContextMenu] = useState<{
+    isVisible: boolean;
+    x: number;
+    y: number;
+    messageId: string;
+  }>({ isVisible: false, x: 0, y: 0, messageId: "" });
+  
+  // State for saved messages
+  const [savedMessages, setSavedMessages] = useState<SavedMessage[]>([]);
+  
+  // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const form = useForm();
   
   // Check if user is logged in
   useEffect(() => {
@@ -41,6 +70,14 @@ const Chat = () => {
     }
   }, [user, roadmap, navigate]);
   
+  // Load saved messages from localStorage
+  useEffect(() => {
+    const storedMessages = localStorage.getItem("jalanSuksesSavedMessages");
+    if (storedMessages) {
+      setSavedMessages(JSON.parse(storedMessages));
+    }
+  }, []);
+  
   // Initial greeting message
   useEffect(() => {
     if (messages.length === 0 && roadmap) {
@@ -50,7 +87,8 @@ const Chat = () => {
           {
             id: "1",
             content: `Halo! Aku siap membantumu mencapai tujuanmu: "${roadmap.goal}". Ada yang bisa aku bantu hari ini?`,
-            isUser: false
+            isUser: false,
+            timestamp: new Date().toISOString()
           }
         ]);
         setIsTyping(false);
@@ -65,70 +103,168 @@ const Chat = () => {
     }
   }, [messages]);
   
-  const generateResponse = (userMessage: string) => {
-    // In a real app, this would call an LLM API like Google Gemini
-    const responses = [
-      `Untuk mencapai tujuanmu "${roadmap?.goal}", kamu perlu fokus pada langkah berikutnya. Teruslah berlatih dan belajar!`,
-      "Jika kamu merasa kesulitan, ingatlah bahwa setiap orang sukses pernah mengalami kegagalan. Yang penting adalah terus bangkit.",
-      "Bagus sekali progresmu sejauh ini! Teruslah konsisten dengan jadwal belajarmu.",
-      "Mungkin kamu bisa mencari mentor atau komunitas yang bisa membantumu dalam perjalanan ini.",
-      "Kamu bisa menggunakan resource yang sudah aku sediakan di roadmap untuk belajar lebih dalam."
-    ];
+  // Close context menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (contextMenu.isVisible) {
+        setContextMenu(prev => ({ ...prev, isVisible: false }));
+      }
+    };
     
-    return responses[Math.floor(Math.random() * responses.length)];
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [contextMenu.isVisible]);
+  
+  // Generate response using LLM
+  const generateResponse = async (userMessage: string) => {
+    // In a real app, this would call the LLM API via the generateChatResponse function
+    // For now, we'll use the mock implementation in llm.ts
+    try {
+      // Convert messages to the format expected by the LLM API
+      const messageHistory = messages.map(msg => ({
+        role: msg.isUser ? 'user' as const : 'assistant' as const,
+        content: msg.content
+      }));
+      
+      // Add the new user message
+      messageHistory.push({
+        role: 'user' as const,
+        content: userMessage
+      });
+      
+      // Call the LLM API
+      return await generateChatResponse(messageHistory, roadmap?.goal);
+    } catch (error) {
+      console.error("Error generating response:", error);
+      return "Maaf, aku mengalami kesulitan. Bisa coba tanyakan dengan cara lain?";
+    }
   };
   
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!input.trim() || isTyping) return;
     
     const userMessage: Message = {
-      id: `user_${messages.length}`,
+      id: `user_${Date.now()}`,
       content: input,
-      isUser: true
+      isUser: true,
+      timestamp: new Date().toISOString()
     };
     
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsTyping(true);
     
-    // Simulate response delay
-    setTimeout(() => {
+    try {
+      const responseText = await generateResponse(input);
+      
+      // Randomly decide whether to include options
+      const includeOptions = Math.random() > 0.5;
+      const options = includeOptions ? [
+        { label: "Beri contoh konkret", value: "Beri contoh konkret" },
+        { label: "Bagaimana cara memulai?", value: "Bagaimana cara memulai?" }
+      ] : undefined;
+      
       const botResponse: Message = {
-        id: `bot_${messages.length + 1}`,
-        content: generateResponse(input),
+        id: `bot_${Date.now()}`,
+        content: responseText,
         isUser: false,
-        options: Math.random() > 0.5 ? [
-          { label: "Beri contoh konkret", value: "Beri contoh konkret" },
-          { label: "Bagaimana cara memulai?", value: "Bagaimana cara memulai?" }
-        ] : undefined
+        options,
+        timestamp: new Date().toISOString()
       };
       
       setMessages(prev => [...prev, botResponse]);
+    } catch (error) {
+      console.error("Error in chat:", error);
+      
+      // Fallback response in case of error
+      const errorResponse: Message = {
+        id: `bot_${Date.now()}`,
+        content: "Maaf, aku mengalami kesulitan. Bisa coba tanyakan dengan cara lain?",
+        isUser: false,
+        timestamp: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
   
-  const handleOptionClick = (value: string) => {
+  const handleOptionClick = async (value: string) => {
     const userMessage: Message = {
-      id: `user_${messages.length}`,
+      id: `user_${Date.now()}`,
       content: value,
-      isUser: true
+      isUser: true,
+      timestamp: new Date().toISOString()
     };
     
     setMessages(prev => [...prev, userMessage]);
     setIsTyping(true);
     
-    // Simulate response delay
-    setTimeout(() => {
+    try {
+      const responseText = await generateResponse(value);
+      
       const botResponse: Message = {
-        id: `bot_${messages.length + 1}`,
-        content: generateResponse(value),
-        isUser: false
+        id: `bot_${Date.now()}`,
+        content: responseText,
+        isUser: false,
+        timestamp: new Date().toISOString()
       };
       
       setMessages(prev => [...prev, botResponse]);
+    } catch (error) {
+      console.error("Error in chat:", error);
+      
+      // Fallback response in case of error
+      const errorResponse: Message = {
+        id: `bot_${Date.now()}`,
+        content: "Maaf, aku mengalami kesulitan. Bisa coba tanyakan dengan cara lain?",
+        isUser: false,
+        timestamp: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
+  };
+  
+  // Handle right-click on message to save
+  const handleMessageContextMenu = (e: React.MouseEvent, messageId: string) => {
+    e.preventDefault();
+    
+    // Only allow context menu on bot messages
+    const message = messages.find(m => m.id === messageId);
+    if (!message || message.isUser) return;
+    
+    setContextMenu({
+      isVisible: true,
+      x: e.clientX,
+      y: e.clientY,
+      messageId
+    });
+  };
+  
+  // Save message to localStorage
+  const handleSaveMessage = () => {
+    const messageToSave = messages.find(m => m.id === contextMenu.messageId);
+    if (!messageToSave) return;
+    
+    const newSavedMessage: SavedMessage = {
+      id: `saved_${Date.now()}`,
+      content: messageToSave.content,
+      timestamp: messageToSave.timestamp || new Date().toISOString()
+    };
+    
+    const updatedSavedMessages = [...savedMessages, newSavedMessage];
+    setSavedMessages(updatedSavedMessages);
+    localStorage.setItem("jalanSuksesSavedMessages", JSON.stringify(updatedSavedMessages));
+  };
+  
+  // Clear all saved messages
+  const handleClearSavedMessages = () => {
+    setSavedMessages([]);
+    localStorage.removeItem("jalanSuksesSavedMessages");
   };
   
   if (!roadmap) {
@@ -141,24 +277,48 @@ const Chat = () => {
   
   return (
     <div className="min-h-screen flex flex-col bg-jalan-background">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-jalan-text">Chat Mentor</h1>
-        <p className="text-jalan-secondary text-sm mt-1">Diskusikan langkahmu menuju "{roadmap.goal}"</p>
+      {/* Header with menu button and bookmark button */}
+      <div className="p-4 flex items-center justify-between border-b border-white/5">
+        <div className="flex items-center">
+          <button
+            onClick={() => setIsMainSidebarOpen(true)}
+            className="mr-4 p-2 text-jalan-secondary hover:text-jalan-text transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button>
+          
+          <div>
+            <h1 className="text-xl font-bold text-jalan-text">Chat Mentor</h1>
+            <p className="text-jalan-secondary text-xs">Diskusikan langkahmu menuju "{roadmap.goal}"</p>
+          </div>
+        </div>
+        
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setIsChatHistorySidebarOpen(true)}
+            className="p-2 text-jalan-secondary hover:text-jalan-text transition-colors"
+            aria-label="Chat history"
+          >
+            <BookmarkIcon size={20} />
+          </button>
+        </div>
       </div>
       
-      {/* Chat messages - Typeform style */}
+      {/* Chat messages */}
       <div 
         ref={chatContainerRef}
-        className="flex-1 flex flex-col px-6 pb-24 space-y-10"
+        className="flex-1 flex flex-col px-6 pb-24 space-y-6 overflow-y-auto"
       >
         {messages.map((message, index) => (
           <div
             key={message.id}
             className={cn(
-              "max-w-[90%] animate-text-appear opacity-0 my-6",
+              "max-w-[90%] animate-text-appear opacity-0",
               message.isUser ? "self-end" : "self-start"
             )}
             style={{ animationDelay: `${index * 0.2}s` }}
+            onContextMenu={(e) => handleMessageContextMenu(e, message.id)}
           >
             {!message.isUser && (
               <div className="mb-2 text-jalan-secondary text-xs uppercase tracking-wider">
@@ -170,7 +330,7 @@ const Chat = () => {
               "p-4 rounded-lg",
               message.isUser 
                 ? "bg-jalan-accent text-black font-medium" 
-                : "bg-black/20 text-jalan-text border border-white/10"
+                : "bg-black/20 text-jalan-text"
             )}>
               {message.isUser ? (
                 message.content
@@ -179,7 +339,7 @@ const Chat = () => {
               )}
             </div>
             
-            {/* Options buttons - Typeform style */}
+            {/* Options buttons */}
             {!message.isUser && message.options && message.options.length > 0 && (
               <div className="mt-4 space-y-3">
                 {message.options.map((option, optIndex) => (
@@ -199,11 +359,11 @@ const Chat = () => {
         
         {/* Typing indicator */}
         {isTyping && (
-          <div className="self-start animate-fade-in my-6">
+          <div className="self-start animate-fade-in">
             <div className="mb-2 text-jalan-secondary text-xs uppercase tracking-wider">
               Mentor
             </div>
-            <div className="bg-black/20 p-4 rounded-lg border border-white/10">
+            <div className="bg-black/20 p-4 rounded-lg">
               <div className="flex space-x-2">
                 <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse"></div>
                 <div className="w-2 h-2 rounded-full bg-jalan-secondary animate-pulse" style={{ animationDelay: "0.2s" }}></div>
@@ -216,8 +376,8 @@ const Chat = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      {/* Input area - Typeform style */}
-      <div className="fixed bottom-16 left-0 right-0 bg-black/80 backdrop-blur-md p-4">
+      {/* Input area */}
+      <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md p-4">
         <div className="max-w-4xl mx-auto flex items-center">
           <Input
             type="text"
@@ -244,8 +404,28 @@ const Chat = () => {
         </div>
       </div>
       
-      {/* Bottom navigation - Seamless style */}
-      <NavigationBar />
+      {/* Context menu for saving messages */}
+      <ChatMessageContextMenu
+        isVisible={contextMenu.isVisible}
+        x={contextMenu.x}
+        y={contextMenu.y}
+        onClose={() => setContextMenu(prev => ({ ...prev, isVisible: false }))}
+        onSave={handleSaveMessage}
+      />
+      
+      {/* Chat history sidebar */}
+      <ChatHistorySidebar
+        isOpen={isChatHistorySidebarOpen}
+        onClose={() => setIsChatHistorySidebarOpen(false)}
+        savedMessages={savedMessages}
+        onClearSavedMessages={handleClearSavedMessages}
+      />
+      
+      {/* Main sidebar */}
+      <MainSidebar
+        isOpen={isMainSidebarOpen}
+        onClose={() => setIsMainSidebarOpen(false)}
+      />
     </div>
   );
 };

@@ -2,7 +2,7 @@
 
 ## Project info
 
-Mentor AI yang membantu menghasilkan _Roadmaps_ berdasarkan obyektif yang ditentukan. Didasari Gemini Pro 2.5.
+Mentor AI yang membantu menghasilkan **peta jalan** berdasarkan obyektif yang ditentukan. Didasari Gemini Pro 2.5.
 
 
 **Use your preferred IDE**

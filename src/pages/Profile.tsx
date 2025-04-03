@@ -1,18 +1,20 @@
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import NavigationBar from "@/components/NavigationBar";
 import TypedText from "@/components/TypedText";
+import MainSidebar from "@/components/MainSidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRoadmap } from "@/contexts/RoadmapContext";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { Menu } from "lucide-react";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { roadmap } = useRoadmap();
   const { toast } = useToast();
+  const [isMainSidebarOpen, setIsMainSidebarOpen] = useState(false);
   
   // Check if user is logged in
   useEffect(() => {
@@ -46,7 +48,16 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-jalan-background pb-20">
       <div className="p-6 pt-10">
-        <h1 className="text-3xl font-bold text-jalan-text mb-8">Profil</h1>
+        <div className="flex items-center mb-8">
+          <button
+            onClick={() => setIsMainSidebarOpen(true)}
+            className="mr-4 p-2 text-jalan-secondary hover:text-jalan-text transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={24} />
+          </button>
+          <h1 className="text-3xl font-bold text-jalan-text">Profil</h1>
+        </div>
         
         <div className="space-y-8">
           {/* User info */}
@@ -128,8 +139,11 @@ const Profile = () => {
         </div>
       </div>
       
-      {/* Bottom navigation */}
-      <NavigationBar />
+      {/* Main Sidebar */}
+      <MainSidebar 
+        isOpen={isMainSidebarOpen} 
+        onClose={() => setIsMainSidebarOpen(false)} 
+      />
     </div>
   );
 };

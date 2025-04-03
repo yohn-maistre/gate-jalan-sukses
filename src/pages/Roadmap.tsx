@@ -2,10 +2,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import TypedText from "@/components/TypedText";
-import NavigationBar from "@/components/NavigationBar";
+import MainSidebar from "@/components/MainSidebar";
 import { useRoadmap } from "@/contexts/RoadmapContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { Menu } from "lucide-react";
 
 const getMotivationalMessage = () => {
   const messages = [
@@ -24,6 +25,7 @@ const Roadmap = () => {
   const { user } = useAuth();
   const [motivationalMessage, setMotivationalMessage] = useState("");
   const [showMotivation, setShowMotivation] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   useEffect(() => {
     if (!user) {
@@ -67,9 +69,20 @@ const Roadmap = () => {
   return (
     <div className="min-h-screen bg-jalan-background pb-20">
       <div className="p-6 pt-10">
-        <div className="flex flex-col mb-6">
-          <h1 className="text-3xl font-bold text-jalan-text mb-2">Peta Jalanmu</h1>
-          <p className="text-jalan-secondary opacity-80">Untuk mencapai: {roadmap.goal}</p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <div className="flex items-center">
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="mr-4 p-2 text-jalan-secondary hover:text-jalan-text transition-colors"
+                aria-label="Open menu"
+              >
+                <Menu size={24} />
+              </button>
+              <h1 className="text-3xl font-bold text-jalan-text">Peta Jalanmu</h1>
+            </div>
+            <p className="text-jalan-secondary opacity-80 mt-2">Untuk mencapai: {roadmap.goal}</p>
+          </div>
         </div>
         
         {/* Progress bar */}
@@ -179,8 +192,12 @@ const Roadmap = () => {
         Chat Mentor →
       </Link>
       
-      {/* Bottom navigation */}
-      <NavigationBar />
+      
+      {/* Main Sidebar */}
+      <MainSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+      />
     </div>
   );
 };
